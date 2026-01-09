@@ -1,5 +1,5 @@
 const CourseEnrollment = require("../models/CourseEnrollment");
-const Course = require("../models/course");
+const Course = require("../models/Course");
 
 /**
  * @desc    Enroll logged-in user into a course
