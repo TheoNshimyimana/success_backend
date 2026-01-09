@@ -14,10 +14,11 @@ const app = express();
 
 // ================= CORS =================
 // Allow your Netlify frontend (replace with your actual Netlify URL)
-const FRONTEND_URL = process.env.FRONTEND_URL || "https://success-backnd.onrender.com"; // fallback to * for testing
+const FRONTEND_URL = process.env.FRONTEND_URL || "https://success-tech-fr.netlify.app"; // fallback to * for testing
 app.use(
   cors({
     origin: FRONTEND_URL,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true, // only needed if using cookies
   })
 );
