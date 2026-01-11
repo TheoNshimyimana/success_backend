@@ -316,11 +316,6 @@ async function getMe(req, res) {
 }
 
 
-
-// ================= UPDATE USER =================
-
-
-// Configure storage for profile pictures
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "uploads/"); // Make sure this folder exists
@@ -335,25 +330,32 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// Your updateUser controller
+// ================= UPDATE USER =================
 const updateUser = async (req, res) => {
   try {
-    // req.body will now contain form fields
-    const { name, email, phone, password } = req.body;
+    // req.body contains form fields
+    const { name, email, phone, password, role } = req.body;
 
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
+    // Update fields if provided
     user.name = name || user.name;
     user.email = email || user.email;
     user.phone = phone || user.phone;
 
-    if (password) {
-      user.password = password; // Make sure you hash it if needed
+    // ✅ Update role if valid
+    if (role && (role === "admin" || role === "user")) {
+      user.role = role;
     }
 
+    // ✅ Hash password if provided
+    if (password) {
+      user.password = await bcrypt.hash(password, 10);
+    }
+
+    // ✅ Update profile picture if file uploaded
     if (req.file) {
-      // Save profile picture path
       user.profilePicture = req.file.path;
     }
 
@@ -364,6 +366,12 @@ const updateUser = async (req, res) => {
     console.error("Update user error:", error);
     res.status(500).json({ message: "Server error" });
   }
+};
+
+// ================= EXPORT =================
+module.exports = {
+  updateUser,
+  upload, // export multer instance for routes
 };
 
 module.exports = { updateUser, upload };
