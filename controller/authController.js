@@ -38,6 +38,7 @@ async function register(req, res) {
       "live.com",
       "protonmail.com",
       "zoho.com",
+      "stlab.rw"
     ];
 
     const emailDomain = email.split("@")[1].toLowerCase();
