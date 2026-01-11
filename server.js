@@ -1,9 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
-const cors = require("cors");
 
-// Routes
 const authRoutes = require("./routes/authRoutes");
 const courseRoutes = require("./routes/courseRoutes");
 const programRoutes = require("./routes/programRoutes");
@@ -12,21 +10,36 @@ const courseEnrollmentRoutes = require("./routes/courseEnrollmentRoutes");
 
 const app = express();
 
-// ================= CORS =================
-// Allow your Netlify frontend (replace with your actual Netlify URL)
-const FRONTEND_URL = process.env.FRONTEND_URL || "https://success-tech-fr.netlify.app"; // fallback to * for testing
-app.use(
-  cors({
-    origin: FRONTEND_URL,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    credentials: true, // only needed if using cookies
-  })
-);
+/* ===================== CORS FIX (Render + Netlify) ===================== */
+const allowedOrigins = [
+  "https://success-tech-fr.netlify.app",
+  "http://localhost:5173",
+  "http://localhost:3000"
+];
 
-// ================= JSON PARSING =================
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+  }
+
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  // Handle preflight requests
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+
+  next();
+});
+
+/* ===================== JSON ===================== */
 app.use(express.json());
 
-// ================= ROUTES =================
+/* ===================== ROUTES ===================== */
 app.use("/api/auth", authRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/programs", programRoutes);
@@ -34,7 +47,7 @@ app.use("/api/enrollments", enrollmentRoutes);
 app.use("/api/course-enrollments", courseEnrollmentRoutes);
 app.use("/uploads", express.static("uploads"));
 
-// ================= MONGODB CONNECTION =================
+/* ===================== MONGODB ===================== */
 mongoose
   .connect(process.env.MONGO_URI, {
     dbName: process.env.DB_NAME || "myDatabase",
@@ -42,6 +55,6 @@ mongoose
   .then(() => console.log("✅ MongoDB connected successfully"))
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 
-// ================= START SERVER =================
+/* ===================== START SERVER ===================== */
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
